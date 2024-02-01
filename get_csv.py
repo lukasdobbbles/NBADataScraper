@@ -62,7 +62,7 @@ class SportsCSV():
         options.add_argument('--headless=new')
         options.add_argument('--disable-gpu')
         self.driver = uc.Chrome(executable_path=ChromeDriverManager().install(), options=options)
-        self.wait = WebDriverWait(self.driver, 150)
+        self.wait = WebDriverWait(self.driver, 180)
 
     def getDatapoint(self, datapoint):
         self.goTo(f"https://tracking.pbpstats.com/stats-nba-tracking-game-logs?Season=2023-24&SeasonType=RegularSeason&Type=player&StatMeasure={datapoint}&TeamId=&OpponentTeamId=")
