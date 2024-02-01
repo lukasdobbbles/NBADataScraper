@@ -5,11 +5,11 @@ from selenium.webdriver.support import expected_conditions
 import os
 import time
 
-DEFAULT_DOWNLOAD_FOLDER = os.getcwd() + "\data"
+DEFAULT_DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "data")
 
 class SportsCSV():
-    def __init__(self, userDataDir):
-        self.userDataDir = userDataDir
+    def __init__(self):
+        #self.userDataDir = userDataDir
         self.session_cookie = ""
 
     def login(self):
@@ -21,7 +21,7 @@ class SportsCSV():
 
             continue_button = self.driver.find_element(By.CSS_SELECTOR, "#renderPageContentWrapper > div.sc-xo4ne6-0.fmNaoE > div > div > form > div:nth-child(3) > button")
             continue_button.click()
-            
+
             time.sleep(1)
 
             password_input = self.driver.find_element(By.CSS_SELECTOR, "input[type=password]")
@@ -41,7 +41,7 @@ class SportsCSV():
 
     def goTo(self, url):
         self.driver.get(url)
-        
+
         if self.session_cookie != "":
             self.driver.add_cookie(self.session_cookie)
 
@@ -55,21 +55,25 @@ class SportsCSV():
         #options.add_argument("user-data-dir=" + self.userDataDir)
         prefs = {"download.default_directory": DEFAULT_DOWNLOAD_FOLDER}
         options.add_experimental_option("prefs", prefs)
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
         #options.add_argument('--headless')
-        self.driver = webdriver.Chrome(chrome_options=options)
+        self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 30)
 
     def getDatapoint(self, datapoint):
         self.goTo(f"https://tracking.pbpstats.com/stats-nba-tracking-game-logs?Season=2023-24&SeasonType=RegularSeason&Type=player&StatMeasure={datapoint}&TeamId=&OpponentTeamId=")
-        
+
         export_csv_button = self.wait.until(expected_conditions.presence_of_element_located((By.XPATH, "/html/body/div/div/div[1]/button")))
         export_csv_button.click()
 
         time.sleep(10) # wait for download
-        
-        downloaded_file_path = DEFAULT_DOWNLOAD_FOLDER + "\\" + "csv.csv"
+
+        downloaded_file_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "csv.csv")
         if os.path.exists(downloaded_file_path):
-            os.rename(downloaded_file_path, DEFAULT_DOWNLOAD_FOLDER + "\\" + datapoint + ".csv")
+            os.rename(downloaded_file_path, os.path.join(DEFAULT_DOWNLOAD_FOLDER, datapoint + ".csv"))
 
     def getAllDatapoints(self):
         datapoints = ["Defense", "Drives", "ElbowTouch", "PaintTouch", "Passing", "Possesions", "Rebounding", "SpeedDistance", "PostTouch"]
