@@ -4,6 +4,9 @@ from get_csv import SportsCSV
 import pandas
 import gspread
 import os, shutil
+import dotenv
+
+dotenv.load_dotenv()
 
 def deleteFolderContents(folder):
     for filename in os.listdir(folder):
