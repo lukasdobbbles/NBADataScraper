@@ -28,26 +28,32 @@ def main():
     gc = gspread.service_account(filename="service_account.json")
     sh = gc.open_by_key(SPREADSHEET_ID)
 
-    #deleteFolderContents(DEFAULT_DOWNLOAD_FOLDER)
+    deleteFolderContents(DEFAULT_DOWNLOAD_FOLDER)
 
-    #sportsCSV = SportsCSV()
-    #sportsCSV.getAllDatapoints()
+    sportsCSV = SportsCSV()
     export_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "log.csv")
-    #sportsCSV.trackingExport(export_path)
+    sportsCSV.trackingExport(export_path)
     csv_data = pandas.read_csv(export_path)
 
     NBA_Player_IDs = pandas.read_csv("NBA_Player_IDs.csv")
     NBA_Team_IDs = pandas.read_csv("NBA_Team_IDs.csv")
 
     NBA_Team_IDs = NBA_Team_IDs.loc[NBA_Team_IDs['Season'] == 2019]# get the most latest season
-    print(NBA_Team_IDs)
 
     csv_data = csv_data.merge(NBA_Player_IDs, how="left", left_on="player_id", right_on="id")
     csv_data = csv_data.merge(NBA_Team_IDs, how="left", left_on="team_id", right_on="NBA_Current_Link_ID")
     csv_data = csv_data.merge(NBA_Team_IDs, how="left", left_on="opponent_team_id", right_on="NBA_Current_Link_ID")
     csv_data = csv_data.drop(columns=["id", "NBA_Current_Link_ID_x", "NBA_Current_Link_ID_y", "Season_x", "team_id", "opponent_team_id", "NBA_Current_Link_ID_y", "NBA_Current_Link_ID_x", "Season_y", "Season_y", "player_id"])  # Drop ID columns after merge
     csv_data = csv_data.rename(columns={ "BBRef_Team_Name_x": "team", "BBRef_Team_Name_y": "opponent_team", "name": "player"})
+    
+    csv_data = csv_data.fillna("")
     print(csv_data.columns)
+
+    worksheet = sh.worksheet("advanced logs")
+    worksheet.update([csv_data.columns.values.tolist()] + csv_data.values.tolist())
+#old method
+#sportsCSV.getAllDatapoints()
+
     # csv_data = None
     # for SOURCE_CSV in os.listdir(DEFAULT_DOWNLOAD_FOLDER):
     #     SOURCE_CSV = os.path.join("data", SOURCE_CSV)
@@ -62,12 +68,5 @@ def main():
 
     # Write data to sheet
     #print(csv_data)
-    csv_data = csv_data.fillna("")
-    print(csv_data.columns)
-
-    worksheet = sh.worksheet("advanced logs")
-    worksheet.update([csv_data.columns.values.tolist()] + csv_data.values.tolist())
-
-
 if __name__ == "__main__":
     main()
