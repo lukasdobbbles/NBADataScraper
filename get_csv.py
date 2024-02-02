@@ -6,6 +6,7 @@ import undetected_chromedriver as uc
 from webdriver_manager.chrome import ChromeDriverManager
 import os
 import time
+import requests
 
 DEFAULT_DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "data")
 
@@ -28,11 +29,11 @@ class SportsCSV():
 
             password_input = self.driver.find_element(By.CSS_SELECTOR, "input[type=password]")
             password_input.send_keys(os.environ["PASSWORD"])
+            self.driver.save_screenshot("screenshot.png")
 
             continue_button.click()
 
             time.sleep(1)
-            self.driver.save_screenshot("screenshot.png")
 
             allow_button = self.driver.find_element(By.CSS_SELECTOR, "#legacyContent > div > div > form > input.patreon-button.patreon-button-action")
             allow_button.click()
@@ -64,24 +65,37 @@ class SportsCSV():
         self.driver = uc.Chrome(executable_path=ChromeDriverManager().install(), options=options)
         self.wait = WebDriverWait(self.driver, 180)
 
-    def getDatapoint(self, datapoint):
-        self.goTo(f"https://tracking.pbpstats.com/stats-nba-tracking-game-logs?Season=2023-24&SeasonType=RegularSeason&Type=player&StatMeasure={datapoint}&TeamId=&OpponentTeamId=")
+    # def getDatapoint(self, datapoint):
+    #     self.goTo(f"https://tracking.pbpstats.com/stats-nba-tracking-game-logs?Season=2023-24&SeasonType=RegularSeason&Type=player&StatMeasure={datapoint}&TeamId=&OpponentTeamId=")
 
-        export_csv_button = self.wait.until(expected_conditions.presence_of_element_located((By.XPATH, "/html/body/div/div/div[1]/button")))
-        export_csv_button.click()
+    #     export_csv_button = self.wait.until(expected_conditions.presence_of_element_located((By.XPATH, "/html/body/div/div/div[1]/button")))
+    #     export_csv_button.click()
 
-        time.sleep(10) # wait for download
+    #     time.sleep(10) # wait for download
 
-        downloaded_file_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "csv.csv")
-        if os.path.exists(downloaded_file_path):
-            os.rename(downloaded_file_path, os.path.join(DEFAULT_DOWNLOAD_FOLDER, datapoint + ".csv"))
+    #     downloaded_file_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "csv.csv")
+    #     if os.path.exists(downloaded_file_path):
+    #         os.rename(downloaded_file_path, os.path.join(DEFAULT_DOWNLOAD_FOLDER, datapoint + ".csv"))
 
-    def getAllDatapoints(self):
-        datapoints = ["Defense", "Drives", "ElbowTouch", "PaintTouch", "Passing", "Possesions", "Rebounding", "SpeedDistance", "PostTouch"]
-        for datapoint in datapoints:
-            self.setupMethod()
-            self.getDatapoint(datapoint)
-            self.teardownMethod()
+    # def getAllDatapoints(self):
+    #     datapoints = ["Defense", "Drives", "ElbowTouch", "PaintTouch", "Passing", "Possesions", "Rebounding", "SpeedDistance", "PostTouch"]
+    #     for datapoint in datapoints:
+    #         self.setupMethod()
+    #         self.getDatapoint(datapoint)
+    #         self.teardownMethod()
+        
+    def trackingExport(self, path):
+        self.setupMethod()
+        # login
+        self.goTo("https://tracking.pbpstats.com/stats-nba-tracking-export")
+
+        season = "2023-24"
+        seasonType = "RegularSeason"
+        type = "game_logs"
+        r = requests.get(f"https://tracking.pbpstats.com/get-tracking-csv?Season={season}&SeasonType={seasonType}&Type={type}")
+        self.teardownMethod()
+        open(path, "wb").write(r.content)
+
 
     def teardownMethod(self):
         self.driver.quit()
