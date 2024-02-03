@@ -13,7 +13,7 @@ DEFAULT_DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "data")
 class SportsCSV():
     def __init__(self):
         #self.userDataDir = userDataDir
-        self.session_cookie = {"name": "session", "value": ".eJwljs1qwzAQhF9F7DmE1c9KyKc-Qu8lhLW0axvsOljOoYS8e1V6GoaZ-ZgX3HXlNkuD4esF5uwCm7TGk8AFPlfhJmbdJ7N8m3M3XEoPzTkvzTx65wq39-3SIYe0GYbzeEp3S4UBRs4B2bqUlCJFzaIpIWZ2toi4pIlUOVpmJ7E4lj6w3gYXxsLqWch5zNVRwFzIlzhmRclMvv6FRClXcuSwxNq5NWjFJKTo1bIdqd-_P5sc_2945p8N0X1MGy_rtewbvH8B-ypMtA.ZbseMw.aJOmem7SQBkjrJPajumcOznpR_Q"}
+        pass
 
     def login(self):
         patronButton = self.driver.find_elements(By.XPATH, "/html/body/div/div/a")
@@ -29,7 +29,6 @@ class SportsCSV():
 
             password_input = self.driver.find_element(By.CSS_SELECTOR, "input[type=password]")
             password_input.send_keys(os.environ["PASSWORD"])
-            self.driver.save_screenshot("screenshot.png")
 
             continue_button.click()
 
@@ -38,15 +37,13 @@ class SportsCSV():
             allow_button = self.driver.find_element(By.CSS_SELECTOR, "#legacyContent > div > div > form > input.patreon-button.patreon-button-action")
             allow_button.click()
 
-            self.session_cookie = self.driver.get_cookie("session")
+            self.driver.save_screenshot("screenshot.png")
 
             return True
         return False
 
     def goTo(self, url):
         self.driver.get(url)
-        if self.session_cookie != "":
-            self.driver.add_cookie(self.session_cookie)
 
         if self.login():
             # retry after the login function has logged in
@@ -92,7 +89,13 @@ class SportsCSV():
         season = "2023-24"
         seasonType = "RegularSeason"
         type = "game_logs"
-        r = requests.get(f"https://tracking.pbpstats.com/get-tracking-csv?Season={season}&SeasonType={seasonType}&Type={type}")
+        headers = {}
+        s = requests.session()
+        s.headers.update(headers)
+        for cookie in self.driver.get_cookies():
+            c = {cookie["name"]: cookie["value"]}
+            s.cookies.update(c)
+        r = s.get(f"https://tracking.pbpstats.com/get-tracking-csv?Season={season}&SeasonType={seasonType}&Type={type}")
         self.teardownMethod()
         open(path, "wb").write(r.content)
 

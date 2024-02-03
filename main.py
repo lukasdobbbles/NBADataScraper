@@ -5,7 +5,9 @@ import pandas
 import gspread
 import os, shutil
 import dotenv
-import time
+import requests
+import lxml.html as lh
+import numpy as np
 
 dotenv.load_dotenv()
 
@@ -45,7 +47,32 @@ def main():
     csv_data = csv_data.merge(NBA_Team_IDs, how="left", left_on="opponent_team_id", right_on="NBA_Current_Link_ID")
     csv_data = csv_data.drop(columns=["id", "NBA_Current_Link_ID_x", "NBA_Current_Link_ID_y", "Season_x", "team_id", "opponent_team_id", "NBA_Current_Link_ID_y", "NBA_Current_Link_ID_x", "Season_y", "Season_y", "player_id"])  # Drop ID columns after merge
     csv_data = csv_data.rename(columns={ "BBRef_Team_Name_x": "team", "BBRef_Team_Name_y": "opponent_team", "name": "player"})
-    
+
+    cached_dates = pandas.read_csv("cached_dates.csv", dtype="str")
+    dates = []
+    for i, row in csv_data.iterrows():
+        print(str((i / csv_data.shape[0]) * 100) + "%")
+        game_id = str(row["game_id"])
+        is_game_id_cached = cached_dates["game_id"] == game_id
+        if is_game_id_cached.any():
+            date = cached_dates.loc[is_game_id_cached, 'date'].iloc[0]
+            dates.append(date)
+            continue
+        r = requests.get("https://bucketlist.fans/game/nba/" + game_id)
+        root = lh.fromstring(r.content)
+        date = root.cssselect("span")[0].text_content()
+        date = date.split(": ")[1]
+        dates.append(date)
+        cached_dates.loc[-1] = [game_id, date]
+
+    cached_dates = pandas.DataFrame(cached_dates)
+    cached_dates.to_csv("cached_dates.csv", index=False)
+
+    csv_data.loc[:, "date"] = dates
+    csv_data["date"] = csv_data["date"].astype(str).apply(pandas.Timestamp)
+    csv_data = csv_data.sort_values(by="date")
+    csv_data["date"] = csv_data["date"].astype(str) # turn back into a string so that it's json serializable
+
     csv_data = csv_data.fillna("")
     print(csv_data.columns)
 
@@ -53,7 +80,6 @@ def main():
     worksheet.update([csv_data.columns.values.tolist()] + csv_data.values.tolist())
 #old method
 #sportsCSV.getAllDatapoints()
-
     # csv_data = None
     # for SOURCE_CSV in os.listdir(DEFAULT_DOWNLOAD_FOLDER):
     #     SOURCE_CSV = os.path.join("data", SOURCE_CSV)
@@ -69,4 +95,5 @@ def main():
     # Write data to sheet
     #print(csv_data)
 if __name__ == "__main__":
+
     main()
