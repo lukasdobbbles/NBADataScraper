@@ -13719,3 +13719,67 @@ Index(['game_id', 'minutes', 'off_poss', 'def_poss', 'drives', 'drive_fgm',
        'feet', 'miles', 'miles_off', 'miles_def', 'avg_speed', 'avg_speed_off',
        'avg_speed_def', 'player', 'team', 'opponent_team', 'date'],
       dtype='object')
+could not detect version_main.therefore, we are assuming it is chrome 108 or higher
+Traceback (most recent call last):
+  File "/home/backyardsubsistence/NBADataScraper/main.py", line 99, in <module>
+    main()
+  File "/home/backyardsubsistence/NBADataScraper/main.py", line 37, in main
+    sportsCSV.trackingExport(export_path)
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 87, in trackingExport
+    self.goTo("https://tracking.pbpstats.com/stats-nba-tracking-export")
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 48, in goTo
+    if self.login():
+       ^^^^^^^^^^^^
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 22, in login
+    email_input = self.wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "input[type=email]")))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/selenium/webdriver/support/wait.py", line 105, in until
+    raise TimeoutException(message, screen, stacktrace)
+selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+#0 0x005564221f30 <unknown>
+#1 0x005563f44b24 <unknown>
+#2 0x005563f88e24 <unknown>
+#3 0x005563fc7278 <unknown>
+#4 0x005563f7cb6c <unknown>
+#5 0x005563f7dbb8 <unknown>
+#6 0x0055641efe40 <unknown>
+#7 0x0055641f2a38 <unknown>
+#8 0x0055641f304c <unknown>
+#9 0x0055641e1b20 <unknown>
+#10 0x0055641f3708 <unknown>
+#11 0x0055641cde58 <unknown>
+#12 0x0055642106bc <unknown>
+#13 0x005564210810 <unknown>
+#14 0x0055642210d8 <unknown>
+#15 0x007f9b4aee58 <unknown>
+#16 0x007f9b517f9c <unknown>
+
+Traceback (most recent call last):
+  File "/home/backyardsubsistence/NBADataScraper/main.py", line 3, in <module>
+    from get_csv import SportsCSV
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 10, in <module>
+    from pyvirtualdisplay import Display
+ModuleNotFoundError: No module named 'pyvirtualdisplay'
+Traceback (most recent call last):
+  File "/home/backyardsubsistence/NBADataScraper/main.py", line 3, in <module>
+    from get_csv import SportsCSV
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 12, in <module>
+    display = Display(visible=0, size=(1920, 1080))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/pyvirtualdisplay/display.py", line 54, in __init__
+    self._obj = cls(
+                ^^^^
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/pyvirtualdisplay/xvfb.py", line 44, in __init__
+    AbstractDisplay.__init__(
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/pyvirtualdisplay/abstractdisplay.py", line 85, in __init__
+    helptext = get_helptext(program)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/pyvirtualdisplay/util.py", line 13, in get_helptext
+    p = subprocess.Popen(
+        ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/subprocess.py", line 1024, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/lib/python3.11/subprocess.py", line 1901, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'Xvfb'

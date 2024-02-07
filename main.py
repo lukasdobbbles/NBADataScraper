@@ -30,11 +30,11 @@ def main():
     gc = gspread.service_account(filename="service_account.json")
     sh = gc.open_by_key(SPREADSHEET_ID)
 
-    #deleteFolderContents(DEFAULT_DOWNLOAD_FOLDER)
+    deleteFolderContents(DEFAULT_DOWNLOAD_FOLDER)
 
-    #sportsCSV = SportsCSV()
+    sportsCSV = SportsCSV()
     export_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "log.csv")
-    #sportsCSV.trackingExport(export_path)
+    sportsCSV.trackingExport(export_path)
     csv_data = pandas.read_csv(export_path)
 
     NBA_Player_IDs = pandas.read_csv("NBA_Player_IDs.csv")
