@@ -88,14 +88,14 @@ class SportsCSV():
 
         season = "2023-24"
         seasonType = "RegularSeason"
-        type = "game_logs"
+        tracking_type = "game_logs"
         headers = {}
         s = requests.session()
         s.headers.update(headers)
         for cookie in self.driver.get_cookies():
             c = {cookie["name"]: cookie["value"]}
             s.cookies.update(c)
-        r = s.get(f"https://tracking.pbpstats.com/get-tracking-csv?Season={season}&SeasonType={seasonType}&Type={type}")
+        r = s.get(f"https://tracking.pbpstats.com/get-tracking-csvSeason={season}&SeasonType={seasonType}&Type={tracking_type}")
         self.teardownMethod()
         open(path, "wb").write(r.content)
 
