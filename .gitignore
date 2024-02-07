@@ -3,3 +3,8 @@ service_account.json
 token.json
 __pycache__
 chromedriver.exe
+bin
+include
+lib
+lib64
+screenshot.png

@@ -50,16 +50,16 @@ class SportsCSV():
             self.driver.get(url)
 
     def setupMethod(self):
-        options = webdriver.ChromeOptions()
+        options = uc.ChromeOptions()
         # default directory to data folder in current working directory (cwd)
         #options.add_argument("user-data-dir=" + self.userDataDir)
         prefs = {"download.default_directory": DEFAULT_DOWNLOAD_FOLDER}
         options.add_experimental_option("prefs", prefs)
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
-        options.add_argument('--headless=new')
+        #options.add_argument('--headless=new')
         options.add_argument('--disable-gpu')
-        self.driver = uc.Chrome(executable_path=ChromeDriverManager().install(), options=options)
+        self.driver = uc.Chrome(driver_executable_path="/home/backyardsubsistence/.local/share/undetected_chromedriver/chromedriver", options=options)
         self.wait = WebDriverWait(self.driver, 180)
 
     # def getDatapoint(self, datapoint):

@@ -30,11 +30,11 @@ def main():
     gc = gspread.service_account(filename="service_account.json")
     sh = gc.open_by_key(SPREADSHEET_ID)
 
-    deleteFolderContents(DEFAULT_DOWNLOAD_FOLDER)
+    #deleteFolderContents(DEFAULT_DOWNLOAD_FOLDER)
 
-    sportsCSV = SportsCSV()
+    #sportsCSV = SportsCSV()
     export_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "log.csv")
-    sportsCSV.trackingExport(export_path)
+    #sportsCSV.trackingExport(export_path)
     csv_data = pandas.read_csv(export_path)
 
     NBA_Player_IDs = pandas.read_csv("NBA_Player_IDs.csv")
@@ -45,17 +45,15 @@ def main():
     csv_data = csv_data.merge(NBA_Player_IDs, how="left", left_on="player_id", right_on="id")
     csv_data = csv_data.merge(NBA_Team_IDs, how="left", left_on="team_id", right_on="NBA_Current_Link_ID")
     csv_data = csv_data.merge(NBA_Team_IDs, how="left", left_on="opponent_team_id", right_on="NBA_Current_Link_ID")
-    csv_data = csv_data.drop(columns=["id", "NBA_Current_Link_ID_x", "NBA_Current_Link_ID_y", "Season_x", "team_id", "opponent_team_id", "NBA_Current_Link_ID_y", "NBA_Current_Link_ID_x", "Season_y", "Season_y", "player_id"])  # Drop ID columns after merge
-    csv_data = csv_data.rename(columns={ "BBRef_Team_Name_x": "team", "BBRef_Team_Name_y": "opponent_team", "name": "player"})
-
+    
     cached_dates = pandas.read_csv("cached_dates.csv", dtype="str")
     dates = []
     for i, row in csv_data.iterrows():
         print(str((i / csv_data.shape[0]) * 100) + "%")
         game_id = str(row["game_id"])
-        is_game_id_cached = cached_dates["game_id"] == game_id
-        if is_game_id_cached.any():
-            date = cached_dates.loc[is_game_id_cached, 'date'].iloc[0]
+        mask = cached_dates["game_id"] == game_id
+        if mask.any():
+            date = cached_dates.loc[mask, 'date'].iloc[0]
             dates.append(date)
             continue
         r = requests.get("https://bucketlist.fans/game/nba/" + game_id)
@@ -71,29 +69,32 @@ def main():
     csv_data.loc[:, "date"] = dates
     csv_data["date"] = csv_data["date"].astype(str).apply(pandas.Timestamp)
     csv_data = csv_data.sort_values(by="date")
+# Then, format the column to 'YYYY-MM-DDTHH:mm:ss'
+    csv_data['date'] = csv_data['date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
     csv_data["date"] = csv_data["date"].astype(str) # turn back into a string so that it's json serializable
+    
+    #logs = sh.worksheet("logs")
+    #logs_csv = pandas.DataFrame(logs.get_all_records())
+    #logs_csv = logs_csv.merge(csv_data[["date", "game_id", "player_id", "oreb_chances",
+    #    "dreb_chances", "drives", "potential_assists", "front_court_touches"]],
+    #    left_on=["PLAYER_ID", "GAME_DATE"], right_on=["player_id", "date"])
+    #def reb_chances_column(x):
+    #    x["reb_chances"] = x["oreb_chances"] + x["dreb_chances"]
+    #    return x
+    #logs_csv = logs_csv.apply(reb_chances_column, axis=1)
+    #logs_csv = logs_csv.drop(columns=["oreb_chances", "dreb_chances", "date", "game_id", "player_id"])
+    #logs_csv.to_csv("logs_test.csv")
+    #logs_csv = logs_csv.astype(str)
+    #logs.update([logs_csv.columns.values.tolist()] + logs_csv.values.tolist())
+    
+    csv_data = csv_data.drop(columns=["id", "NBA_Current_Link_ID_x", "NBA_Current_Link_ID_y", "Season_x", "team_id", "opponent_team_id", "NBA_Current_Link_ID_y", "NBA_Current_Link_ID_x", "Season_y", "Season_y", "player_id"])  # Drop ID columns after merge
+    csv_data = csv_data.rename(columns={ "BBRef_Team_Name_x": "team", "BBRef_Team_Name_y": "opponent_team", "name": "player"})
 
     csv_data = csv_data.fillna("")
     print(csv_data.columns)
-
     worksheet = sh.worksheet("advanced logs")
     worksheet.update([csv_data.columns.values.tolist()] + csv_data.values.tolist())
-#old method
-#sportsCSV.getAllDatapoints()
-    # csv_data = None
-    # for SOURCE_CSV in os.listdir(DEFAULT_DOWNLOAD_FOLDER):
-    #     SOURCE_CSV = os.path.join("data", SOURCE_CSV)
-    #     new_csv = pandas.read_csv(SOURCE_CSV)
 
-    #     if csv_data is None:
-    #         csv_data = new_csv
-    #         continue
-
-    #     matching_headers = list(set(new_csv.columns.values.tolist()) & set(csv_data.columns.values.tolist()))
-    #     csv_data = csv_data.merge(new_csv, how="inner", left_on=matching_headers, right_on=matching_headers)     
-
-    # Write data to sheet
-    #print(csv_data)
 if __name__ == "__main__":
-
     main()
+
