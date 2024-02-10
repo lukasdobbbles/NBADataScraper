@@ -8,6 +8,7 @@ import dotenv
 import requests
 import lxml.html as lh
 import numpy as np
+import backoff
 
 dotenv.load_dotenv()
 
@@ -25,6 +26,12 @@ def deleteFolderContents(folder):
 DEFAULT_DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "data")
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID = "1asJrG0AuYW0gwoA3Csw6Mm-F1Z2kaf-TjJq4SOvZJ60"
+
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_time=60)  # Max backoff time
+def get_request(url):
+    return requests.get(url)
 
 def main():
     gc = gspread.service_account(filename="service_account.json")
@@ -49,20 +56,24 @@ def main():
     cached_dates = pandas.read_csv("cached_dates.csv", dtype="str")
     dates = []
     for i, row in csv_data.iterrows():
-        print(str((i / csv_data.shape[0]) * 100) + "%")
+        #print(str((i / csv_data.shape[0]) * 100) + "%")
         game_id = str(row["game_id"])
         mask = cached_dates["game_id"] == game_id
         if mask.any():
             date = cached_dates.loc[mask, 'date'].iloc[0]
             dates.append(date)
             continue
-        r = requests.get("https://bucketlist.fans/game/nba/" + game_id)
+        r = get_request("https://bucketlist.fans/game/nba/" + game_id)
         root = lh.fromstring(r.content)
-        date = root.cssselect("span")[0].text_content()
-        date = date.split(": ")[1]
-        dates.append(date)
-        cached_dates.loc[-1] = [game_id, date]
-
+        try:
+            date = root.cssselect("span")[0].text_content()
+            date = date.split(": ")[1]
+            dates.append(date)
+            cached_dates.loc[-1] = [game_id, date]
+        except IndexError:
+            print("couldn't find date for: " + game_id)
+            print(r.content)
+            dates.append("0-0-0")
     cached_dates = pandas.DataFrame(cached_dates)
     cached_dates.to_csv("cached_dates.csv", index=False)
 
@@ -94,6 +105,14 @@ def main():
     print(csv_data.columns)
     worksheet = sh.worksheet("advanced logs")
     worksheet.update([csv_data.columns.values.tolist()] + csv_data.values.tolist())
+
+    passing_sh = sh.worksheet("passing")
+    passing_file = sportsCSV.getDatapoint("Passing")
+    passing_sh.update(list(csv.reader(open(passing_file))))
+                           
+    rebounding_sh = sh.worksheet("rebounding")
+    rebounding_file = sportsCSV.getDatapoint("Rebounding")
+    rebounding_sh.update(list(csv.reader(open(rebounding_file))))
 
 if __name__ == "__main__":
     main()

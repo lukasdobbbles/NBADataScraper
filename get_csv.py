@@ -18,11 +18,21 @@ class SportsCSV():
     def __init__(self):
         #self.userDataDir = userDataDir
         pass
+    
+    def check_allow_button(self):
+        allow_button = self.driver.find_elements(By.CSS_SELECTOR, "#legacyContent > div > div > form > input.patreon-button.patreon-button-action")
+        if len(allow_button) > 0:
+            allow_button[0].click()
+            return True
+        return False
 
     def login(self):
         patronButton = self.driver.find_elements(By.XPATH, "/html/body/div/div/a")
         if len(patronButton) > 0:
             patronButton[0].click()
+            
+            if self.check_allow_button():
+                return True
             
             self.driver.save_screenshot("screenshot.png")
             
@@ -41,8 +51,7 @@ class SportsCSV():
 
             time.sleep(1)
 
-            allow_button = self.driver.find_element(By.CSS_SELECTOR, "#legacyContent > div > div > form > input.patreon-button.patreon-button-action")
-            allow_button.click()
+            self.check_allow_button()
 
             return True
         return False
@@ -69,25 +78,26 @@ class SportsCSV():
         self.driver = uc.Chrome(driver_executable_path="/home/backyardsubsistence/.local/share/undetected_chromedriver/chromedriver", options=options)
         self.wait = WebDriverWait(self.driver, 60)
 
-    # def getDatapoint(self, datapoint):
-    #     self.goTo(f"https://tracking.pbpstats.com/stats-nba-tracking-game-logs?Season=2023-24&SeasonType=RegularSeason&Type=player&StatMeasure={datapoint}&TeamId=&OpponentTeamId=")
+    def getDatapoint(self, datapoint):
+        self.setupMethod()
+        self.login()
+        self.goTo(f"https://tracking.pbpstats.com/stats-nba-tracking-game-logs?Season=2023-24&SeasonType=RegularSeason&Type=player&StatMeasure={datapoint}&TeamId=&OpponentTeamId=")
 
-    #     export_csv_button = self.wait.until(expected_conditions.presence_of_element_located((By.XPATH, "/html/body/div/div/div[1]/button")))
-    #     export_csv_button.click()
+        export_csv_button = self.wait.until(expected_conditions.presence_of_element_located((By.XPATH, "/html/body/div/div/div[1]/button")))
+        export_csv_button.click()
 
-    #     time.sleep(10) # wait for download
+        time.sleep(10) # wait for download
 
-    #     downloaded_file_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "csv.csv")
-    #     if os.path.exists(downloaded_file_path):
-    #         os.rename(downloaded_file_path, os.path.join(DEFAULT_DOWNLOAD_FOLDER, datapoint + ".csv"))
+        downloaded_file_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, "csv.csv")
+        if os.path.exists(downloaded_file_path):
+            os.rename(downloaded_file_path, os.path.join(DEFAULT_DOWNLOAD_FOLDER, datapoint))
+        self.teardownMethod()
 
-    # def getAllDatapoints(self):
-    #     datapoints = ["Defense", "Drives", "ElbowTouch", "PaintTouch", "Passing", "Possesions", "Rebounding", "SpeedDistance", "PostTouch"]
-    #     for datapoint in datapoints:
-    #         self.setupMethod()
-    #         self.getDatapoint(datapoint)
-    #         self.teardownMethod()
-        
+    def getAllDatapoints(self):
+        datapoints = ["Defense", "Drives", "ElbowTouch", "PaintTouch", "Passing", "Possesions", "Rebounding", "SpeedDistance", "PostTouch"]
+        for datapoint in datapoints:
+                    self.getDatapoint(datapoint)
+            
     def trackingExport(self, path):
         self.setupMethod()
         # login
@@ -110,3 +120,4 @@ class SportsCSV():
 
     def teardownMethod(self):
         self.driver.quit()
+
