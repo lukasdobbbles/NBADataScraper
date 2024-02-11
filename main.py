@@ -7,7 +7,6 @@ import os, shutil
 import dotenv
 import requests
 import lxml.html as lh
-import numpy as np
 import backoff
 
 dotenv.load_dotenv()
@@ -24,7 +23,6 @@ def deleteFolderContents(folder):
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 DEFAULT_DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "data")
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID = "1asJrG0AuYW0gwoA3Csw6Mm-F1Z2kaf-TjJq4SOvZJ60"
 
 @backoff.on_exception(backoff.expo,
@@ -84,7 +82,24 @@ def main():
     csv_data['date'] = csv_data['date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
     csv_data["date"] = csv_data["date"].astype(str) # turn back into a string so that it's json serializable
     
-    #logs = sh.worksheet("logs")
+    csv_data = csv_data.drop(columns=["id", "NBA_Current_Link_ID_x", "NBA_Current_Link_ID_y", "Season_x", "team_id", "opponent_team_id", "NBA_Current_Link_ID_y", "NBA_Current_Link_ID_x", "Season_y", "Season_y", "player_id"])  # Drop ID columns after merge
+    csv_data = csv_data.rename(columns={ "BBRef_Team_Name_x": "team", "BBRef_Team_Name_y": "opponent_team", "name": "player"})
+
+    csv_data = csv_data.fillna("")
+    print(csv_data.columns)
+    worksheet = sh.worksheet("advanced logs")
+    worksheet.update([csv_data.columns.values.tolist()] + csv_data.values.tolist())
+
+    rebounding_sh = sh.worksheet("passing")
+    rebounding_sh.update(sportsCSV.getDatapoint("Passing"))
+
+    rebounding_sh = sh.worksheet("rebounding")
+    rebounding_sh.update(sportsCSV.getDatapoint("Rebounding"))
+
+if __name__ == "__main__":
+    main()
+
+#logs = sh.worksheet("logs")
     #logs_csv = pandas.DataFrame(logs.get_all_records())
     #logs_csv = logs_csv.merge(csv_data[["date", "game_id", "player_id", "oreb_chances",
     #    "dreb_chances", "drives", "potential_assists", "front_court_touches"]],
@@ -97,23 +112,3 @@ def main():
     #logs_csv.to_csv("logs_test.csv")
     #logs_csv = logs_csv.astype(str)
     #logs.update([logs_csv.columns.values.tolist()] + logs_csv.values.tolist())
-    
-    csv_data = csv_data.drop(columns=["id", "NBA_Current_Link_ID_x", "NBA_Current_Link_ID_y", "Season_x", "team_id", "opponent_team_id", "NBA_Current_Link_ID_y", "NBA_Current_Link_ID_x", "Season_y", "Season_y", "player_id"])  # Drop ID columns after merge
-    csv_data = csv_data.rename(columns={ "BBRef_Team_Name_x": "team", "BBRef_Team_Name_y": "opponent_team", "name": "player"})
-
-    csv_data = csv_data.fillna("")
-    print(csv_data.columns)
-    worksheet = sh.worksheet("advanced logs")
-    worksheet.update([csv_data.columns.values.tolist()] + csv_data.values.tolist())
-
-    passing_sh = sh.worksheet("passing")
-    passing_file = sportsCSV.getDatapoint("Passing")
-    passing_sh.update(list(csv.reader(open(passing_file))))
-                           
-    rebounding_sh = sh.worksheet("rebounding")
-    rebounding_file = sportsCSV.getDatapoint("Rebounding")
-    rebounding_sh.update(list(csv.reader(open(rebounding_file))))
-
-if __name__ == "__main__":
-    main()
-
