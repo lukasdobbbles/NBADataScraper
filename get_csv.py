@@ -67,10 +67,10 @@ class SportsCSV():
         self.driver.get(url)
 
         if self.login():
-            self.__extractCookiesFromDriver()
             # retry after the login function has logged in
             self.driver.get(url)
-
+        self.__extractCookiesFromDriver()
+        
     def setupMethod(self):
         options = uc.ChromeOptions()
         # default directory to data folder in current working directory (cwd)
