@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "/home/backyardsubsistence/NBADataScraper/main.py", line 100, in <module>
+    main()
+  File "/home/backyardsubsistence/NBADataScraper/main.py", line 42, in main
+    sportsCSV.trackingExport(export_path)
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 111, in trackingExport
+    self.__fullLogin()
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 106, in __fullLogin
+    self.setupMethod()
+  File "/home/backyardsubsistence/NBADataScraper/get_csv.py", line 90, in setupMethod
+    self.driver = uc.Chrome(executable_path="/home/backyardsubsistence/.local/share/undetected_chromedriver/chromedriver", options=options)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/undetected_chromedriver/__init__.py", line 466, in __init__
+    super(Chrome, self).__init__(
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/selenium/webdriver/chrome/webdriver.py", line 45, in __init__
+    super().__init__(
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/selenium/webdriver/chromium/webdriver.py", line 50, in __init__
+    self.service.start()
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/selenium/webdriver/common/service.py", line 98, in start
+    self._start_process(self._path)
+  File "/home/backyardsubsistence/NBADataScraper/lib/python3.11/site-packages/selenium/webdriver/common/service.py", line 208, in _start_process
+    self.process = subprocess.Popen(
+                   ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/subprocess.py", line 1024, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/lib/python3.11/subprocess.py", line 1901, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+OSError: [Errno 8] Exec format error: '/home/backyardsubsistence/.local/share/undetected_chromedriver/undetected_chromedriver'

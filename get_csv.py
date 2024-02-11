@@ -8,9 +8,13 @@ import os
 import time
 import requests
 from bs4 import BeautifulSoup
+from pyvirtualdisplay import Display
+
+display = Display(visible=0, size=(1920, 1080))
+display.start()
 
 DEFAULT_DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "data")
-USER_DATA_DIR = "C:\\Users\\lukas\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1"
+USER_DATA_DIR = "/home/backyardsubsistence/.config/chromium/Default"
 class SportsCSV():
     def __init__(self):
         pass
@@ -56,17 +60,14 @@ class SportsCSV():
             time.sleep(1)
 
             self.check_allow_button()
-
-            self.__extractCookiesFromDriver()
-
             return True
-        self.__extractCookiesFromDriver()
         return False
 
     def goTo(self, url):
         self.driver.get(url)
 
         if self.login():
+            self.__extractCookiesFromDriver()
             # retry after the login function has logged in
             self.driver.get(url)
 
@@ -78,13 +79,13 @@ class SportsCSV():
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
         options.add_argument('--verbose')
-        options.add_argument('--headless=new')
+        #options.add_argument('--headless=new')
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-extensions')
         options.add_argument('--start-maximized')
         options.add_argument('--user-data-dir=' + USER_DATA_DIR)
-        self.driver = uc.Chrome(executable_path=ChromeDriverManager().install(), options=options)
-        self.wait = WebDriverWait(self.driver, 180)
+        self.driver = uc.Chrome(driver_executable_path="/home/backyardsubsistence/.local/share/undetected_chromedriver/chromedriver", options=options)
+        self.wait = WebDriverWait(self.driver, 60)
 
     def getDatapoint(self, datapoint):
         self.__fullLogin()
@@ -100,7 +101,7 @@ class SportsCSV():
 
     def __fullLogin(self):
         self.setupMethod()
-        self.goTo("https://tracking.pbpstats.com/stats-nba-tracking-export")
+        self.goTo("https://tracking.pbpstats.com/")
         self.teardownMethod()
 
     def trackingExport(self, path):
